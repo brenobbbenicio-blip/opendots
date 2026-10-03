@@ -6,6 +6,32 @@ import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { validateLearningSettings } from '../shared/learning.js';
 import type { CallReceipt, Conversation, Dot, Space } from '../shared/types.js';
+
+/** Specialists a fresh workspace starts with. Dot stays first so Slack's default remains the initial Dot. */
+const starterDots = [
+  {
+    name: 'Dot',
+    instructions:
+      'Be thoughtful, practical, and concise. Help the user think clearly and follow through.',
+    researchAllowed: true,
+    memoryAllowed: true,
+  },
+  {
+    name: 'Scout',
+    instructions:
+      'Investigate topics the owner asks about. Read only public pages they provide, separate evidence from inference, and cite sources. When asked to save notes or a page, show a draft for approval first.',
+    researchAllowed: true,
+    memoryAllowed: true,
+  },
+  {
+    name: 'Writer',
+    instructions:
+      'Turn findings and notes into a clear draft. Re-read the current page before editing, and show the draft for approval before saving. Do not invent sources or claim research that was not provided.',
+    researchAllowed: false,
+    memoryAllowed: true,
+  },
+] as const;
+
 export class WorkspaceStore {
   private db: DatabaseSync;
   readonly pages: Pages;
@@ -65,13 +91,14 @@ export class WorkspaceStore {
         'Everyday',
         'A little space for your day.',
       );
-      this.createDot(
-        space.id,
-        'Dot',
-        'Be thoughtful, practical, and concise. Help the user think clearly and follow through.',
-        true,
-        true,
-      );
+      for (const specialist of starterDots)
+        this.createDot(
+          space.id,
+          specialist.name,
+          specialist.instructions,
+          specialist.researchAllowed,
+          specialist.memoryAllowed,
+        );
     }
   }
   close() {

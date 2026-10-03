@@ -4,6 +4,38 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
 import { WorkspaceStore } from '../src/server/workspace.js';
+it('seeds the researcher and writer alongside the initial Dot', () => {
+  const store = new WorkspaceStore(':memory:', 'owner');
+  expect(store.spaces().map((space) => space.name)).toEqual(['Everyday']);
+  expect(
+    store.dots().map((dot) => ({
+      name: dot.name,
+      researchAllowed: dot.researchAllowed,
+      memoryAllowed: dot.memoryAllowed,
+      spaceIds: dot.spaceIds,
+    })),
+  ).toEqual([
+    {
+      name: 'Dot',
+      researchAllowed: true,
+      memoryAllowed: true,
+      spaceIds: [store.spaces()[0].id],
+    },
+    {
+      name: 'Scout',
+      researchAllowed: true,
+      memoryAllowed: true,
+      spaceIds: [store.spaces()[0].id],
+    },
+    {
+      name: 'Writer',
+      researchAllowed: false,
+      memoryAllowed: true,
+      spaceIds: [store.spaces()[0].id],
+    },
+  ]);
+  store.close();
+});
 it('persists spaces, specialist permissions, and canonical thread ownership', () => {
   const store = new WorkspaceStore(':memory:', 'owner');
   const space = store.createSpace('Design', 'Design decisions');
